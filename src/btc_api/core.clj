@@ -128,16 +128,22 @@
     )
 
 
+(defprotocol Exchange 
+  (tickers [site])
+  (ticker [site symbol])
+  )
+
+
 (defn block-headers 
   ([node] (block-headers node 0 (.current-height node)))
   ([node i n] (if (< i n)
                 (lazy-seq (cons (.block-header-of node i) (block-headers node (inc i) n)))
                 '())))
-(defn blocks 
-  ([node] (blocks node 0 (.current-height node)))
-  ([node i n] (if (< i n)
-                (lazy-seq (cons (.block-of node i) (blocks node (inc i) n)))
-                '())))
+#_(defn blocks 
+   ([node] (blocks node 0 (.current-height node)))
+   ([node i n] (if (< i n)
+                 (lazy-seq (cons (.block-of node i) (blocks node (inc i) n)))
+                 '())))
 
 
 (defn transactions-of [height-or-hash-or-block node] 
@@ -154,3 +160,15 @@
   ([node i n] (if (< i n)
                 (lazy-seq (concat (transactions node (inc i) n) (transactions-of i node)))
                 '())))
+
+
+
+(defn marketcap 
+  ([height exchange-site ticker-symbol]
+    (marketcap height ((.ticker exchange-site ticker-symbol) "last")))
+  ([height rate]
+  (* (circulation-btc height) rate)))
+  
+
+
+

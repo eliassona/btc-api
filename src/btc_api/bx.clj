@@ -49,7 +49,11 @@
 (deftype BxNode []
   Node
   (current-height [_] (fetch-height))
+  (block-hash-of [node height])
+
   (block-header-of [_ height-of-index] (fetch-header height-of-index))
+  (block-of [node height-or-hash])
+  (tx-of [node tx-hash])
   )
 
 (def-bx script-decode base-16-script) 
@@ -91,4 +95,9 @@
   (input-validate-of [_ ec-public-key contract endorsement base-16-tx] (input-validate ec-public-key contract endorsement base-16-tx))
   )
   
+
+
+
+
+
 
