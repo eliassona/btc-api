@@ -38,7 +38,7 @@
         is  (.getInputStream connection)]
     (slurp is)))
 
-(def get-exchange-data 
+(def exchange-data 
   (map 
     text->data
     (rest 
@@ -48,12 +48,47 @@
           (.split  (get-file) "\n"))))))
 
 
+(defn daily-gain-percent []
+  (let [values (map :close exchange-data)]
+    (loop [ix (dec (count values))
+           res '()
+           prev-value 0]
+    (if (>= ix 0)
+      (let [v (nth values ix)]
+        (recur (dec ix) (cons (/ v (if (= prev-value 0) v prev-value)) res) v))
+      res))))
+
+(defn average [c]
+  (* 365 (- (/ (reduce + c) (count c)) 1)))
+
 (defn moving-average-of [start-ix days]
-  (/ (reduce + (map :close (take days (nthrest get-exchange-data start-ix)))) days))
+  (/ (reduce + (map :close (take days (nthrest exchange-data start-ix)))) days))
+
+
+
+
+(defn moving-averages-of [days]
+  (loop [ix (- (count exchange-data ) days)
+         ma '()]
+    (if (>= ix 0)
+      (recur (dec ix) (cons (moving-average-of ix days) ma))
+      ma)))
+      
+
+(defn moving-averages-delta-of [days]
+  (let [mas (moving-averages-of days)]
+    (loop [ix (dec (count mas))
+           res '()
+           prev-ma 0]
+    (if (>= ix 0)
+      (let [ma (moving-average-of ix days)]
+        (recur (dec ix) (cons (- ma prev-ma) res) ma))
+      res))))
+      
 
 
 (defn mayer-multiple []
-  (/ (-> get-exchange-data first :close) (moving-average-of 0 200)))
+  (/ (-> exchange-data first :close) (moving-average-of 0 200)))
 
      
 
